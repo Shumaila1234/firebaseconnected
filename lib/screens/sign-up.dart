@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebaseconnected/model/singup-model.dart';
 import 'package:firebaseconnected/repo/sigup-repo.dart';
 import 'package:flutter/material.dart';
@@ -18,19 +19,87 @@ class _SignUpState extends State<SignUp> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController ageController = TextEditingController();
   SignupRepo signUpDao = SignupRepo();
-  
+  var validating;
 
-  void _getRegistered() async {
-    final message = SignupModel(
-        nameController.text, passwordController.text, confirmPassword.text);
-    signUpDao.saveAccData(message);
-    const snackBar = SnackBar(
-      content: Text('Successfully Registered!'),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  // Future<String> _getRegistered() async {
+  //   // signUpDao.pushdata();
 
-    // signUpDao.printFirebase();
-    signUpDao.getUsers();
+  //   validating = await signUpDao.printFirebase(context);
+
+  //   print("validing " + validating.toString());
+
+  //   if (validating != "") {
+  //     if (validating.toString() == "User is already exists") {
+  //       print("found");
+  //       const snackBar = SnackBar(
+  //         content: Text('User is already exists'),
+  //       );
+  //       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //     } else {
+  //       print("not found");
+  //       final message = SignupModel(
+  //           nameController.text, passwordController.text, confirmPassword.text);
+  //       signUpDao.saveAccData(message);
+  //     }
+  //   }
+
+  //   return validating;
+  // }
+ String returnValue="";
+  _getRegistered( ){
+    
+      final DatabaseReference _accRef =
+      FirebaseDatabase.instance.reference().child('Chat').child("Register");
+      _accRef.once().then((DataSnapshot snapshot) {
+   
+      Map<String, dynamic> map = Map<String, dynamic>.from(snapshot.value);
+ 
+      if (map.isNotEmpty) {
+        try {
+          map.forEach((k, v) {
+            if (map[k]['name'] == "Alicet") {
+              print("exists");
+              setState(() {
+                 returnValue = "User is already exists";
+                 throw returnValue;
+              });
+            
+
+            }
+            else{
+              setState(() {
+                returnValue="Not exists";
+              });
+            }
+          });
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        setState(() {
+           returnValue = "0 lenght";
+        });
+       
+      }
+    });
+    print("object");
+  print(returnValue);
+
+    if(returnValue=="User is already exists"){
+            const snackBar = SnackBar(
+          content: Text('User is already exists'),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+    else if(returnValue!=""){
+            final message = SignupModel(
+            nameController.text, passwordController.text, confirmPassword.text);
+        signUpDao.saveAccData(message);
+        const snackBar = SnackBar(
+          content: Text('Registered'),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
 
   }
 
@@ -107,9 +176,10 @@ class _SignUpState extends State<SignUp> {
                             backgroundColor: MaterialStateProperty.all<Color>(
                                 Colors.lightBlue)),
                         onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _getRegistered();
-                          }
+                          // if (_formKey.currentState!.validate()) {
+                          //   _getRegistered();
+                          // }
+                          _getRegistered();
                         },
                         child: const Text('Submit'),
                       )
