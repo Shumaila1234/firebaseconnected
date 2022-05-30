@@ -6,7 +6,7 @@ class SignupRepo {
   final DatabaseReference ref = FirebaseDatabase.instance.reference();
   final DatabaseReference _accRef =
       FirebaseDatabase.instance.reference().child('Chat').child("Register");
-  final List<User> list = [];
+  final List<User> list = []
   List users = [];
   var returnValue = "not exists";
 
